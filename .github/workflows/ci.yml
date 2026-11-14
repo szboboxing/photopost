@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: JS 语法检查
+        run: |
+          fail=0
+          for f in $(git ls-files '*.js' '*.mjs'); do
+            case "$f" in
+              *.min.js) continue ;;
+            esac
+            cp "$f" /tmp/check.mjs
+            node --check /tmp/check.mjs || fail=1
+          done
+          exit $fail

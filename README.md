@@ -1,6 +1,7 @@
 # 光影画室 Photopost
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/szboboxing/photopost/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/szboboxing/photopost/actions/workflows/ci.yml)
 [![Deploy](https://img.shields.io/badge/Deploy-Cloudflare%20Pages-f38020?logo=cloudflare&logoColor=white)](https://photopost.pages.dev)
 [![Latest Release](https://img.shields.io/github/v/release/szboboxing/photopost?color=orange)](https://github.com/szboboxing/photopost/releases)
 [![Last Commit](https://img.shields.io/github/last-commit/szboboxing/photopost)](https://github.com/szboboxing/photopost/commits/main)
