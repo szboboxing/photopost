@@ -1,0 +1,16 @@
+name = "photopost-media"
+main = "src/index.js"
+compatibility_date = "2025-10-01"
+workers_dev = true
+
+# 成本开关（可选）：不配就用代码里的默认值 MAX_UPLOAD_MB=100、MAX_STORAGE_MB=8000
+# 改值用 `wrangler secret put MAX_UPLOAD_MB` / `wrangler secret put MAX_STORAGE_MB`（立即生效）
+# 删除用 `wrangler secret delete MAX_UPLOAD_MB`（回落到默认值）
+
+# Workers AI 绑定：免 API Token 调用 8 个出图大模型（每天 1 万 neurons 免费额度）
+[ai]
+binding = "AI"
+
+[[r2_buckets]]
+binding = "MUSIC"
+bucket_name = "photopost-music"

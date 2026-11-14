@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FBF7F1">
+<title>后台管理 · 光影画室</title>
+<link rel="stylesheet" href="assets/theme.css">
+<script>
+try{
+  var _m = localStorage.getItem('gy_theme') || 'auto';
+  var _d = _m === 'auto' ? ((matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light') : _m;
+  document.documentElement.setAttribute('data-theme', _d);
+}catch(e){}
+</script>
+<style>
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{max-width:380px;width:100%;padding:30px}
+.login-card h1{font-size:26px;margin:6px 0 10px}
+.login-card input{width:100%;min-height:54px;border-radius:14px;border:1px solid var(--line);
+  background:var(--panel-2);color:var(--text);padding:0 16px;font-size:16px;margin:8px 0 16px;font-family:inherit}
+.admin-brand{font-family:var(--font-serif);font-weight:700;padding:0 14px;white-space:nowrap}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.grow{flex:1}
+.table-wrap{background:var(--panel);border-radius:var(--radius-table);overflow-x:auto;box-shadow:var(--shadow-sm)}
+.hint-cell{max-width:340px;color:var(--muted);font-size:12px}
+.act-btns{display:flex;gap:6px;flex-wrap:wrap}
+.act-btns button{min-height:36px;padding:0 10px;border-radius:9px;border:1px solid var(--line);
+  background:var(--panel-2);color:var(--text);font-size:12px;cursor:pointer;font-family:inherit}
+.act-btns button:hover{background:var(--bg-soft)}
+.toolbar select{min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);
+  color:var(--text);padding:0 12px;font-size:13px;font-family:inherit;cursor:pointer}
+.modal{position:fixed;inset:0;z-index:100;background:rgba(20,16,12,.6);display:none;
+  align-items:center;justify-content:center;padding:16px;overflow:auto}
+.modal.show{display:flex}
+.modal-card{max-width:660px;width:100%;max-height:92vh;overflow:auto}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.modal-head h2{font-size:22px}
+.field{margin:12px 0}
+.field.two{display:flex;gap:12px}
+.field.two>div{flex:1}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.field input,.field textarea{width:100%;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel-2);color:var(--text);padding:12px 14px;font-size:15px;font-family:inherit}
+.field textarea{line-height:1.6;resize:vertical}
+.img-edit{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.img-preview{width:96px;height:126px;border-radius:12px;background:var(--panel-2);display:flex;
+  align-items:center;justify-content:center;color:var(--muted);font-size:12px;overflow:hidden}
+.img-preview img{width:100%;height:100%;object-fit:cover}
+.img-btns{display:flex;gap:8px;flex-wrap:wrap}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+.table-hint{display:none;color:var(--muted);font-size:12px;text-align:center;margin:10px 0 0}
+.pager{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px}
+.pager-info{font-size:13px;color:var(--muted);min-width:70px;text-align:center;font-variant-numeric:tabular-nums}
+.pager button:disabled{opacity:.45;cursor:not-allowed}
+.preview-body{display:flex;gap:16px;align-items:flex-start}
+.preview-img{flex:0 0 36%;aspect-ratio:3/4;border-radius:14px;overflow:hidden;border:1px solid var(--line);
+  background:var(--panel-2);display:flex;align-items:center;justify-content:center}
+.preview-img img{width:100%;height:100%;object-fit:cover;display:block}
+.preview-img[hidden]{display:none}
+.preview-meta{flex:1 1 auto;min-width:0}
+.preview-en{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0}
+.preview-desc{font-size:13px;line-height:1.6;color:var(--text);margin:6px 0 0}
+.preview-code{white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.75;max-height:36vh;
+  overflow:auto;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+  margin:10px 0 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.preview-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;
+  font-size:12px;font-weight:600;color:#fff;background:var(--accent-2);white-space:nowrap}
+.chip.video{background:var(--accent)}
+.chip.off{background:var(--panel-2);color:var(--muted);border:1px solid var(--line);font-weight:400}
+
+/* 首页功能开关（热播榜单） */
+.site-switch{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:0 0 14px}
+.sw-txt{min-width:0}
+.sw-txt strong{display:block;font-size:14px}
+.sw-txt .hint{margin:2px 0 0}
+.sw-toggle{flex:0 0 auto;min-width:136px;min-height:44px;padding:0 16px;border-radius:999px;
+  border:1px solid var(--line);background:var(--panel-2);color:var(--text);font-family:inherit;
+  font-size:13px;font-weight:600;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.sw-toggle.on{background:var(--accent-2);color:#fff;border-color:transparent}
+.sw-toggle:disabled{opacity:.55;cursor:not-allowed}
+
+/* 手机端：表格改为卡片式堆叠，避免横向挤压变形 */
+@media(max-width:760px){
+  .table-wrap{background:transparent;box-shadow:none;overflow:visible}
+  .data-table{display:block;min-width:0;background:transparent;font-size:13px}
+  .data-table thead{display:none}
+  .data-table tbody{display:block}
+  .data-table tr{display:block;background:var(--panel);border-radius:16px;box-shadow:var(--shadow-sm);
+    padding:12px 14px;margin:0 0 10px}
+  .data-table td{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;border:none;padding:4px 0;word-break:break-word}
+  .data-table td::before{content:attr(data-label);flex:0 0 62px;color:var(--muted);font-size:12px;
+    line-height:1.5;padding-top:1px}
+  .data-table td .hint{flex:1 0 100%;width:100%;box-sizing:border-box;padding-left:72px}
+  .data-table td.hint{color:var(--text)}
+  .data-table .tid{display:none}
+  .data-table img{width:60px;height:78px}
+  .data-table .hint-cell{max-width:none}
+  .act-btns{flex:1}
+  .act-btns button{flex:1 1 auto;min-height:42px;padding:0 10px}
+  .table-hint{display:none}
+  .toolbar{gap:8px}
+  .toolbar .btn{flex:1 1 auto;min-height:48px;padding:0 12px;font-size:14px}
+  .toolbar .grow{display:none}
+  .toolbar select{flex:1 1 100%;min-height:48px}
+  .site-switch{flex-direction:column;align-items:stretch;gap:10px;padding:12px}
+  .sw-toggle{width:100%;min-height:48px}
+  .block-head{gap:10px;align-items:flex-start}
+  .block-head .badge{width:36px;height:36px;font-size:17px;border-radius:11px}
+  .block-head h2{font-size:19px}
+  .block-head .sub{font-size:13px}
+  .field.two{flex-direction:column}
+  .preview-body{flex-direction:column}
+  .preview-img{flex:0 0 auto;width:100%;aspect-ratio:4/5;max-height:40vh}
+  .preview-foot .btn{flex:1}
+  .field input,.field textarea,.login-card input{font-size:16px}  /* 防 iOS 聚焦时自动放大 */
+  .modal{padding:10px;align-items:flex-start}
+  .modal-card{max-height:none;padding:16px;border-radius:18px;margin:0 auto}
+  .modal-card video{max-height:56vh}
+  .modal-foot{position:sticky;bottom:0;background:var(--panel);padding:12px 0 4px;border-top:1px solid var(--line)}
+  .modal-foot .btn{flex:1}
+  .login-wrap{padding:16px;min-height:100vh}
+  .login-card{padding:22px}
+}
+</style>
+</head>
+<body>
+
+<header class="pillnav-wrap">
+  <nav class="pillnav">
+    <a href="index.html">← 返回首页</a>
+    <span class="admin-brand">后台管理</span>
+    <button id="themeBtn" type="button">自动</button>
+  </nav>
+</header>
+
+<!-- 登录 -->
+<div id="login" class="login-wrap">
+  <div class="card login-card">
+    <p class="eyebrow">Admin Console</p>
+    <h1>后台登录</h1>
+    <p class="sub">输入管理密码，进入提示词与示例图管理</p>
+    <input id="adminPass" type="password" placeholder="请输入管理密码" autocomplete="off">
+    <button id="loginBtn" class="btn primary block" type="button">登录</button>
+    <p class="hint" id="loginHint">默认密码 admin，登录后可修改</p>
+    <p class="hint" style="margin-top:6px">线上入口已由站点密码保护，这里只是本机界面的附加锁。</p>
+  </div>
+</div>
+
+<!-- 面板 -->
+<main id="panel" class="wrap" hidden>
+  <section class="block">
+    <div class="block-head">
+      <span class="badge b-teal">管</span>
+      <div><h2>提示词样板</h2><p class="sub">可新增 / 编辑 / 复制 / 删除 / 排序，示例图可替换</p></div>
+    </div>
+
+    <div class="toolbar">
+      <button id="btnAdd" class="btn primary" type="button">＋ 新增样板</button>
+      <button id="btnExport" class="btn ghost" type="button">导出 JSON</button>
+      <button id="btnImport" class="btn ghost" type="button">导入 JSON</button>
+      <button id="btnReset" class="btn ghost" type="button">恢复默认</button>
+      <input type="file" id="importInput" accept="application/json,.json" hidden>
+      <span class="grow"></span>
+      <button id="btnPw" class="btn ghost" type="button">修改密码</button>
+      <button id="btnLogout" class="btn ghost" type="button">退出登录</button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>#</th><th>示例</th><th>名称 / 说明</th><th>提示词</th><th>操作</th></tr></thead>
+        <tbody id="styleBody"></tbody>
+      </table>
+    </div>
+    <p class="table-hint">← 左右滑动表格可查看完整提示词与操作按钮 →</p>
+
+    <p class="hint" style="margin-top:14px">
+      数据保存在本浏览器（localStorage），仅本机生效。要让所有访客看到：点「导出 JSON」→ 重命名为
+      <strong>styles.json</strong> 放到站点根目录部署，首页会自动读取它。
+    </p>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="badge b-terra">媒</span>
+      <div><h2>云端媒体中心</h2><p class="sub">上传音频 / 视频，存放在云端 R2，所有访客共享；音频自动压缩为 MP3，视频原样上传</p></div>
+    </div>
+
+    <div class="toolbar">
+      <button id="btnMusicAdd" class="btn primary" type="button">＋ 上传音频 / 视频</button>
+      <select id="musicBitrate" title="音频压缩码率（仅对音频生效，视频原样上传）">
+        <option value="96">音频 96 kbps · 更小</option>
+        <option value="128" selected>音频 128 kbps · 推荐</option>
+        <option value="192">音频 192 kbps · 高音质</option>
+      </select>
+      <input type="file" id="musicInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.ogg,.flac,.aac,.mp4,.webm,.mov,.m4v,.ogv" multiple hidden>
+      <span class="grow"></span>
+      <button id="btnMusicRefresh" class="btn ghost" type="button">刷新列表</button>
+    </div>
+
+    <div class="site-switch">
+      <div class="sw-txt">
+        <strong>首页 · 热播榜单</strong>
+        <div class="hint" id="chartSwitchHint">正在读取开关状态…</div>
+      </div>
+      <button id="btnChartsToggle" class="sw-toggle" type="button" disabled>读取中…</button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>#</th><th>名称</th><th>类型</th><th>时长</th><th>大小</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody id="musicBody"><tr><td colspan="7" class="hint">正在读取…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="pager" id="musicPager">
+      <button id="musicPrevPage" class="btn ghost sm" type="button">上一页</button>
+      <span class="pager-info" id="musicPageInfo">1 / 1</span>
+      <button id="musicNextPage" class="btn ghost sm" type="button">下一页</button>
+    </div>
+    <p class="table-hint">← 左右滑动表格可查看操作按钮 →</p>
+
+    <p class="hint" style="margin-top:14px" id="musicHint">
+      音频：mp3 / wav / m4a / ogg / flac / aac，浏览器内压缩为 MP3（约 10 分钟内，更长的自动改为原样上传）。
+      视频：推荐 mp4（H.264）或 webm，原样上传、不做压缩，首页左下角小窗播放。
+      单次请求受 Cloudflare 平台限制约 100MB，更大的文件请先压缩。
+    </p>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="badge b-teal">AI</span>
+      <div><h2>AI 模型排行榜</h2><p class="sub">8 个出图大模型轮换上岗：按实测成功率与平均耗时自动排序，最快的优先出图，失败自动降级下一名</p></div>
+    </div>
+
+    <div class="toolbar">
+      <button id="btnAiBench" class="btn primary" type="button">一键测速（8 个模型）</button>
+      <button id="btnAiRefresh" class="btn ghost" type="button">刷新榜单</button>
+      <button id="btnAiReset" class="btn ghost" type="button">重置成绩</button>
+      <span class="grow"></span>
+      <span class="hint" id="aiBenchHint">读取中…</span>
+    </div>
+
+    <p class="hint" id="aiRankHint" style="margin:0 0 10px">图生图在岗：待测 · 文生图最快：待测</p>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>排名</th><th>模型</th><th>平台</th><th>能力</th><th>平均耗时</th><th>成功率</th><th>样本</th><th>得分</th><th>状态</th></tr></thead>
+        <tbody id="aiRankBody"><tr><td colspan="9" class="hint">正在读取…</td></tr></tbody>
+      </table>
+    </div>
+    <p class="table-hint">← 左右滑动表格可查看完整列 →</p>
+
+    <p class="hint" style="margin-top:14px">
+      说明：Cloudflare 的 6 个模型是纯文生图，不能接收你的照片；带「图生图」能力的 Agnes 2.0 / 2.1 才能直接用照片出图。
+      榜单按同一能力组内比较，首页图生图请求只会在 Agnes 两个模型之间轮换，Cloudflare 模型用于纯文字出图与备选。
+    </p>
+  </section>
+</main>
+
+<!-- 编辑弹窗 -->
+<div id="editor" class="modal">
+  <div class="modal-card card">
+    <div class="modal-head"><h2 id="editorTitle">编辑样板</h2>
+      <button id="btnCancelX" class="btn ghost sm" type="button">✕</button></div>
+
+    <div class="field"><label>名称（必填）</label><input id="fName" type="text" placeholder="如：简约构图"></div>
+    <div class="field two">
+      <div class="field" style="margin:0"><label>英文 / 标签</label><input id="fEn" type="text" placeholder="如：MINIMAL COMPOSITION"></div>
+      <div class="field" style="margin:0"><label>一句话说明</label><input id="fDesc" type="text" placeholder="如：极简几何 · 色块 · 线稿"></div>
+    </div>
+
+    <div class="field"><label>示例图片</label>
+      <div class="img-edit">
+        <div id="fImgPreview" class="img-preview">无示例图</div>
+        <div class="img-btns">
+          <button id="fImgUpload" class="btn ghost sm" type="button">上传图片</button>
+          <button id="fImgClear" class="btn ghost sm" type="button">清除</button>
+        </div>
+        <input type="file" id="fImgInput" accept="image/*" hidden>
+      </div>
+    </div>
+
+    <div class="field"><label>提示词（必填）</label>
+      <textarea id="fPrompt" rows="10" placeholder="粘贴完整提示词"></textarea></div>
+
+    <div class="modal-foot">
+      <button id="btnCancel" class="btn ghost" type="button">取消</button>
+      <button id="btnSave" class="btn primary" type="button">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="pwModal" class="modal">
+  <div class="modal-card card" style="max-width:440px">
+    <div class="modal-head"><h2>修改密码</h2>
+      <button id="pwCancelX" class="btn ghost sm" type="button">✕</button></div>
+
+    <div class="field"><label>当前密码</label><input id="pwOld" type="password" placeholder="请输入当前密码" autocomplete="off"></div>
+    <div class="field"><label>新密码（至少 4 位）</label><input id="pwNew" type="password" placeholder="请输入新密码" autocomplete="new-password"></div>
+    <div class="field"><label>确认新密码</label><input id="pwNew2" type="password" placeholder="再输入一次新密码" autocomplete="new-password"></div>
+
+    <p class="hint">此密码只保存在本浏览器，用于锁住本机界面；忘记本地密码可清除本站站点数据恢复为默认 admin。</p>
+    <p class="hint" style="margin-top:6px">线上访问的站点密码由 Cloudflare 环境变量 ADMIN_PASSWORD 控制：本机命令行执行 <code>wrangler pages secret put ADMIN_PASSWORD --project-name photopost</code> 输入新值，再运行 <code>deploy.ps1</code> 重新部署才生效。</p>
+
+    <div class="modal-foot">
+      <button id="pwCancel" class="btn ghost" type="button">取消</button>
+      <button id="pwSave" class="btn primary" type="button">保存新密码</button>
+    </div>
+  </div>
+</div>
+
+<div id="videoModal" class="modal">
+  <div class="modal-card card" style="max-width:760px">
+    <div class="modal-head"><h2 id="videoModalTitle">视频预览</h2>
+      <button id="videoCloseX" class="btn ghost sm" type="button">✕</button></div>
+    <video id="videoPreview" controls playsinline webkit-playsinline preload="metadata"
+      style="width:100%;max-height:70vh;border-radius:12px;background:#000"></video>
+    <p class="hint" style="margin-top:10px">这是访客在首页左下角小窗里看到的同一段视频；若是竖屏手机拍摄，首页会按宽度自适应。</p>
+  </div>
+</div>
+
+<div id="renameModal" class="modal">
+  <div class="modal-card card" style="max-width:440px">
+    <div class="modal-head"><h2>重命名文件</h2>
+      <button id="renameCancelX" class="btn ghost sm" type="button">✕</button></div>
+
+    <div class="field"><label>显示名称（访客在首页歌单里看到的名字）</label>
+      <input id="renameInput" type="text" maxlength="60" placeholder="例如：夏日海风" autocomplete="off"></div>
+
+    <p class="hint">只改显示名称，云端文件本身、链接和播放进度都不会变；保存后首页约 1 秒内更新。</p>
+
+    <div class="modal-foot">
+      <button id="renameCancel" class="btn ghost" type="button">取消</button>
+      <button id="renameSave" class="btn primary" type="button">保存名称</button>
+    </div>
+  </div>
+</div>
+
+<div id="stylePreview" class="modal">
+  <div class="modal-card card" style="max-width:780px">
+    <div class="modal-head"><h2 id="previewTitle">样板预览</h2>
+      <button id="previewCloseX" class="btn ghost sm" type="button">✕</button></div>
+    <div class="preview-body">
+      <div class="preview-img" id="previewImgWrap"><img id="previewImg" alt="示例图"></div>
+      <div class="preview-meta">
+        <p class="preview-en" id="previewEn"></p>
+        <p class="preview-desc" id="previewDesc"></p>
+        <pre id="previewPrompt" class="preview-code"></pre>
+        <div class="preview-foot">
+          <button id="previewCopy" class="btn ghost" type="button">复制提示词</button>
+          <button id="previewEdit" class="btn primary" type="button">编辑此样板</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="assets/lame.min.js"></script>
+<script src="assets/defaults.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  var toastTimer = null;
+  function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2600); }
+
+  /* 主题 */
+  var THEME_KEY = 'gy_theme';
+  var themeMode = (function () { try { return localStorage.getItem(THEME_KEY) || 'auto'; } catch (e) { return 'auto'; } })();
+  function resolvedTheme(m) { return m === 'auto' ? ((matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light') : m; }
+  function applyTheme() {
+    document.documentElement.setAttribute('data-theme', resolvedTheme(themeMode));
+    var b = $('themeBtn'); if (b) b.textContent = themeMode === 'auto' ? '自动' : (themeMode === 'dark' ? '昏暗' : '明亮');
+  }
+  $('themeBtn').addEventListener('click', function () {
+    themeMode = themeMode === 'auto' ? 'light' : (themeMode === 'light' ? 'dark' : 'auto');
+    try { localStorage.setItem(THEME_KEY, themeMode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  /* 数据层 */
+  var LS = 'gy_styles_v1';
+  var PW_KEY = 'gy_admin_pw';
+  var DEFAULT_PASS = 'admin';
+  function getAdminPass() {
+    try { return localStorage.getItem(PW_KEY) || DEFAULT_PASS; } catch (e) { return DEFAULT_PASS; }
+  }
+  function setAdminPass(v) { localStorage.setItem(PW_KEY, v); }
+  function syncLoginHint() {
+    var h = $('loginHint'); if (!h) return;
+    var custom = false;
+    try { custom = !!localStorage.getItem(PW_KEY); } catch (e) {}
+    h.textContent = custom ? '密码已自定义，请输入你设置的密码' : '默认密码 admin，登录后可修改';
+  }
+  syncLoginHint();
+  function copy(o) { return JSON.parse(JSON.stringify(o)); }
+  function genKey() { return 's' + Date.now() + Math.floor(Math.random() * 1000); }
+  var styles = (function () {
+    try { var raw = localStorage.getItem(LS); if (raw) { var a = JSON.parse(raw); if (a && a.length) return a; } } catch (e) {}
+    return copy(window.GY_DEFAULTS || []);
+  })();
+  function persist() {
+    try { localStorage.setItem(LS, JSON.stringify(styles)); }
+    catch (e) { toast('保存失败：本地存储空间可能不足'); }
+  }
+
+  /* 登录 */
+  function showPanel(v) { $('login').style.display = v ? 'none' : 'flex'; $('panel').hidden = !v; }
+  function isLogged() { try { return sessionStorage.getItem('gy_admin') === '1'; } catch (e) { return false; } }
+  function doLogin() {
+    if ($('adminPass').value.trim() === getAdminPass()) { try { sessionStorage.setItem('gy_admin', '1'); } catch (e) {} showPanel(true); toast('欢迎回来'); }
+    else { toast('密码错误'); }
+  }
+  $('loginBtn').addEventListener('click', doLogin);
+  $('adminPass').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+  $('btnLogout').addEventListener('click', function () { try { sessionStorage.removeItem('gy_admin'); } catch (e) {} showPanel(false); });
+  if (isLogged()) showPanel(true);
+
+  /* 修改密码 */
+  function openPw() {
+    $('pwOld').value = ''; $('pwNew').value = ''; $('pwNew2').value = '';
+    syncLoginHint();
+    $('pwModal').classList.add('show');
+    $('pwOld').focus();
+  }
+  function closePw() { $('pwModal').classList.remove('show'); }
+  $('btnPw').addEventListener('click', openPw);
+  $('pwCancel').addEventListener('click', closePw);
+  $('pwCancelX').addEventListener('click', closePw);
+  $('pwModal').addEventListener('click', function (e) { if (e.target === this) closePw(); });
+  $('pwSave').addEventListener('click', function () {
+    var oldV = $('pwOld').value.trim();
+    var nv = $('pwNew').value.trim();
+    var nv2 = $('pwNew2').value.trim();
+    if (oldV !== getAdminPass()) { toast('当前密码不正确'); $('pwOld').focus(); return; }
+    if (nv.length < 4) { toast('新密码至少 4 位'); $('pwNew').focus(); return; }
+    if (nv !== nv2) { toast('两次输入的新密码不一致'); $('pwNew2').focus(); return; }
+    if (nv === oldV) { toast('新密码与当前密码相同，无需修改'); return; }
+    try { setAdminPass(nv); } catch (e) { toast('保存失败：浏览器本地存储不可用'); return; }
+    syncLoginHint();
+    closePw();
+    toast('密码已更新，下次登录请使用新密码');
+  });
+  ['pwOld', 'pwNew', 'pwNew2'].forEach(function (id) {
+    $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') $('pwSave').click(); });
+  });
+
+  /* 列表渲染 */
+  function renderTable() {
+    var body = $('styleBody'); body.innerHTML = '';
+    styles.forEach(function (s, i) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td data-label="#">' + (i + 1) + '</td>' +
+        '<td data-label="示例">' + (s.img ? '<img src="' + escapeHtml(s.img) + '" alt="">' : '<span class="hint">无</span>') + '</td>' +
+        '<td data-label="名称"><strong>' + escapeHtml(s.name) + '</strong><div class="hint">' + escapeHtml(s.en || '') + (s.desc ? ' · ' + escapeHtml(s.desc) : '') + '</div></td>' +
+        '<td data-label="提示词" class="hint-cell">' + escapeHtml((s.prompt || '').slice(0, 40)) + ((s.prompt || '').length > 40 ? '…' : '') + '</td>' +
+        '<td data-label="操作"><div class="act-btns">' +
+          '<button data-a="preview" data-i="' + i + '">预览</button>' +
+          '<button data-a="up" data-i="' + i + '">↑</button>' +
+          '<button data-a="down" data-i="' + i + '">↓</button>' +
+          '<button data-a="edit" data-i="' + i + '">编辑</button>' +
+          '<button data-a="dup" data-i="' + i + '">复制</button>' +
+          '<button data-a="del" data-i="' + i + '">删除</button>' +
+        '</div></td>';
+      body.appendChild(tr);
+    });
+  }
+  $('styleBody').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) {
+      var img = e.target.closest('img');           // 点示例缩略图也能预览
+      if (img) openStylePreview(Array.prototype.indexOf.call($('styleBody').children, img.closest('tr')));
+      return;
+    }
+    var i = +b.dataset.i, a = b.dataset.a;
+    if (a === 'preview') openStylePreview(i);
+    else if (a === 'edit') openEditor(i);
+    else if (a === 'dup') duplicate(i);
+    else if (a === 'del') remove(i);
+    else if (a === 'up') move(i, -1);
+    else if (a === 'down') move(i, 1);
+  });
+
+  /* 样板预览：大图 + 完整提示词，可在弹窗里直接复制或转去编辑 */
+  var previewIndex = -1;
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      ok ? resolve() : reject(new Error('copy failed'));
+    });
+  }
+  function openStylePreview(i) {
+    var s = styles[i]; if (!s) return;
+    previewIndex = i;
+    $('previewTitle').textContent = (s.name || '样板') + ' · 预览';
+    $('previewEn').textContent = s.en || '';
+    $('previewDesc').textContent = s.desc || '';
+    $('previewPrompt').textContent = s.prompt || '（未填写提示词）';
+    var wrap = $('previewImgWrap'), img = $('previewImg');
+    if (s.img) { img.src = s.img; wrap.hidden = false; }
+    else { img.removeAttribute('src'); wrap.hidden = true; }
+    $('stylePreview').classList.add('show');
+  }
+  function closeStylePreview() {
+    var m = $('stylePreview'); if (m) m.classList.remove('show');
+    previewIndex = -1;
+  }
+  $('previewCloseX').addEventListener('click', closeStylePreview);
+  $('stylePreview').addEventListener('click', function (e) { if (e.target === this) closeStylePreview(); });
+  $('previewEdit').addEventListener('click', function () {
+    var i = previewIndex; closeStylePreview(); if (i >= 0) openEditor(i);
+  });
+  $('previewCopy').addEventListener('click', function () {
+    var s = previewIndex >= 0 ? styles[previewIndex] : null;
+    var text = s ? (s.prompt || '') : '';
+    if (!text) { toast('这条样板还没有提示词'); return; }
+    copyText(text).then(function () { toast('提示词已复制'); })
+      .catch(function () { toast('复制失败，请在编辑弹窗里手动选取'); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if ($('stylePreview').classList.contains('show')) closeStylePreview();
+    if ($('renameModal').classList.contains('show')) closeRename();
+  });
+
+  function duplicate(i) {
+    var s = copy(styles[i]); s.key = genKey(); s.name = (s.name || '样板') + '（副本）';
+    styles.splice(i + 1, 0, s); persist(); renderTable(); toast('已复制');
+  }
+  function remove(i) {
+    if (!confirm('确定删除「' + (styles[i].name || '') + '」？')) return;
+    styles.splice(i, 1); persist(); renderTable(); toast('已删除');
+  }
+  function move(i, dir) {
+    var j = i + dir; if (j < 0 || j >= styles.length) return;
+    var t = styles[i]; styles[i] = styles[j]; styles[j] = t; persist(); renderTable();
+  }
+
+  /* 编辑器 */
+  var editingIndex = -1, editImg = '';
+  function openEditor(i) {
+    editingIndex = i; editImg = '';
+    $('editorTitle').textContent = i >= 0 ? '编辑样板' : '新增样板';
+    if (i >= 0) {
+      var s = styles[i];
+      $('fName').value = s.name || ''; $('fEn').value = s.en || ''; $('fDesc').value = s.desc || '';
+      $('fPrompt').value = s.prompt || ''; editImg = s.img || '';
+    } else {
+      $('fName').value = ''; $('fEn').value = ''; $('fDesc').value = ''; $('fPrompt').value = ''; editImg = '';
+    }
+    updateImgPreview();
+    $('editor').classList.add('show');
+    $('fName').focus();
+  }
+  function closeEditor() { $('editor').classList.remove('show'); editingIndex = -1; }
+  function updateImgPreview() {
+    var p = $('fImgPreview');
+    p.innerHTML = editImg ? '<img src="' + escapeHtml(editImg) + '" alt="">' : '无示例图';
+  }
+  function compressImage(file, cb) {
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function () {
+      var w = img.naturalWidth, h = img.naturalHeight, scale = Math.min(1, 1400 / Math.max(w, h));
+      var c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(w * scale)); c.height = Math.max(1, Math.round(h * scale));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      cb(c.toDataURL('image/jpeg', 0.85));
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); toast('图片读取失败'); };
+    img.src = url;
+  }
+
+  $('btnAdd').addEventListener('click', function () { openEditor(-1); });
+  $('btnCancel').addEventListener('click', closeEditor);
+  $('btnCancelX').addEventListener('click', closeEditor);
+  $('editor').addEventListener('click', function (e) { if (e.target === this) closeEditor(); });
+  $('fImgUpload').addEventListener('click', function () { $('fImgInput').click(); });
+  $('fImgInput').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    compressImage(f, function (dataUrl) { editImg = dataUrl; updateImgPreview(); toast('图片已添加'); });
+    e.target.value = '';
+  });
+  $('fImgClear').addEventListener('click', function () { editImg = ''; updateImgPreview(); });
+
+  $('btnSave').addEventListener('click', function () {
+    var name = $('fName').value.trim();
+    var prompt = $('fPrompt').value.trim();
+    if (!name) { toast('请填写名称'); return; }
+    if (!prompt) { toast('请填写提示词'); return; }
+    var obj = {
+      key: (editingIndex >= 0 && styles[editingIndex].key) ? styles[editingIndex].key : genKey(),
+      name: name, en: $('fEn').value.trim(), desc: $('fDesc').value.trim(),
+      img: editImg || '', prompt: prompt
+    };
+    if (editingIndex >= 0) styles[editingIndex] = obj; else styles.push(obj);
+    persist(); renderTable(); closeEditor(); toast('已保存');
+  });
+
+  /* 导出 / 导入 / 恢复 */
+  $('btnExport').addEventListener('click', function () {
+    var blob = new Blob([JSON.stringify(styles, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'styles.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 3000);
+    toast('已导出 styles.json');
+  });
+  $('btnImport').addEventListener('click', function () { $('importInput').click(); });
+  $('importInput').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var arr = JSON.parse(reader.result);
+        if (!Array.isArray(arr) || !arr.length) throw new Error('格式不正确');
+        arr.forEach(function (it) { if (!it.key) it.key = genKey(); });
+        styles = arr; persist(); renderTable(); toast('已导入 ' + arr.length + ' 条');
+      } catch (err) { toast('导入失败：' + err.message); }
+    };
+    reader.readAsText(f);
+    e.target.value = '';
+  });
+  $('btnReset').addEventListener('click', function () {
+    if (!confirm('恢复为默认 4 条样板？当前修改将丢失。')) return;
+    styles = copy(window.GY_DEFAULTS || []); persist(); renderTable(); toast('已恢复默认');
+  });
+
+  renderTable();
+
+  /* ---------------- 云端媒体中心管理（R2 云端存储：音频 + 视频） ---------------- */
+  var music = [];
+  var musicLoading = false;
+  var musicAudio = new Audio();
+  var musicPlayingKey = '';
+
+  /* 云端上限（由 /api/music 响应头下发，可随时用 Worker 的 MAX_UPLOAD_MB / MAX_STORAGE_MB 调整） */
+  var MAX_CLOUD_BYTES = 100 * 1024 * 1024;          // 单次上传上限，默认 100MB（平台上限）
+  var MAX_STORAGE_BYTES = 0;                        // 云端总容量上限，0 = 未知（不拦）
+  var STORAGE_USED_BYTES = 0;                       // 云端已用容量
+  var DIRECT_MEDIA = false;                         // 是否已开启 R2 自定义域名直出
+  function applyMediaLimits(h) {
+    if (!h) return;
+    // 兼容 fetch 的 Response.headers 与 XHR 的 getResponseHeader
+    var get = typeof h.get === 'function' ? function (n) { return h.get(n); }
+      : (typeof h.getResponseHeader === 'function' ? function (n) { return h.getResponseHeader(n); } : null);
+    if (!get) return;
+    var v;
+    v = Number(get('X-Media-Max-Upload-Bytes'));   if (v > 0) MAX_CLOUD_BYTES = v;
+    v = Number(get('X-Media-Max-Storage-Bytes'));  if (v > 0) MAX_STORAGE_BYTES = v;
+    v = Number(get('X-Media-Storage-Used-Bytes')); if (v > 0) STORAGE_USED_BYTES = v;
+    DIRECT_MEDIA = get('X-Media-Direct') === '1';
+  }
+  function usageText() {
+    var s = ' · 单次上限 ' + fmtSize(MAX_CLOUD_BYTES);
+    if (MAX_STORAGE_BYTES) {
+      var pct = Math.min(100, Math.round(STORAGE_USED_BYTES / MAX_STORAGE_BYTES * 1000) / 10);
+      s += ' · 云端已用 ' + fmtSize(STORAGE_USED_BYTES) + ' / ' + fmtSize(MAX_STORAGE_BYTES) + '（' + pct + '%）';
+    }
+    if (DIRECT_MEDIA) s += ' · R2 直出已开启';
+    return s;
+  }
+
+  function fmtSize(n) {
+    n = Number(n) || 0;
+    if (!n) return '—';
+    return n >= 1048576 ? (n / 1048576).toFixed(2) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+  }
+  function fmtDur(s) {
+    s = Number(s) || 0;
+    if (!s) return '—';
+    var m = Math.floor(s / 60), ss = Math.round(s % 60);
+    if (ss === 60) { m++; ss = 0; }
+    return m + ':' + (ss < 10 ? '0' : '') + ss;
+  }
+  function musicHint(msg, isErr) {
+    var h = $('musicHint'); if (!h) return;
+    h.textContent = msg;
+    h.style.color = isErr ? '#C0392B' : '';
+  }
+  function trackSrc(t) { return t.src || ('/media/' + t.key); }
+  function apiError(r, out, fallback) {
+    if (r.status === 401) return '登录会话已过期，请刷新页面重新验证站点密码';
+    return (out && out.error && (out.error.message || out.error)) || fallback;
+  }
+
+  function isVideoTrack(t) {
+    if (!t) return false;
+    if (typeof t.video === 'boolean') return t.video;
+    var tp = String(t.type || '').toLowerCase();
+    if (tp) return /^video\//.test(tp);
+    return /\.(mp4|m4v|webm|mov|ogv)/i.test(String(t.key || t.src || ''));
+  }
+
+  var MUSIC_PAGE_SIZE = 10, musicPage = 0;   // 后台上传列表：按时间倒序，每页 10 个
+  function sortMusic() {
+    music.sort(function (a, b) { return (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0); });
+  }
+  function renderMusic() {
+    var body = $('musicBody'); if (!body) return;
+    var total = music.length;
+    var pages = Math.max(1, Math.ceil(total / MUSIC_PAGE_SIZE));
+    if (musicPage > pages - 1) musicPage = pages - 1;
+    if (musicPage < 0) musicPage = 0;
+    var start = musicPage * MUSIC_PAGE_SIZE;
+    if (!total) {
+      body.innerHTML = '<tr><td colspan="7" class="hint">暂无媒体文件，点上方「上传音频 / 视频」添加</td></tr>';
+    } else {
+      body.innerHTML = '';
+      music.slice(start, start + MUSIC_PAGE_SIZE).forEach(function (t, k) {
+        var i = start + k, isV = isVideoTrack(t);
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td data-label="#">' + (i + 1) + '</td>' +
+          '<td data-label="名称"><strong>' + escapeHtml(t.name) + '</strong>' + (t.id ? '<div class="hint tid">' + escapeHtml(t.id) + '</div>' : '') + '</td>' +
+          '<td data-label="类型"><span class="chip' + (isV ? ' video' : '') + '">' + (isV ? '视频' : '音频') + '</span></td>' +
+          '<td data-label="时长" class="hint">' + fmtDur(t.duration) + '</td>' +
+          '<td data-label="大小" class="hint">' + fmtSize(t.size) + '</td>' +
+          '<td data-label="状态"><span class="chip' + (t.enabled ? '' : ' off') + '">' + (t.enabled ? '启用' : '停用') + '</span></td>' +
+          '<td data-label="操作"><div class="act-btns">' +
+            '<button data-a="rename" data-i="' + i + '">重命名</button>' +
+            '<button data-a="toggle" data-i="' + i + '">' + (t.enabled ? '停用' : '启用') + '</button>' +
+            '<button data-a="play" data-i="' + i + '">' + (isV ? '预览' : '试听') + '</button>' +
+            '<button data-a="del" data-i="' + i + '">删除</button>' +
+          '</div></td>';
+        body.appendChild(tr);
+      });
+    }
+    if ($('musicPageInfo')) $('musicPageInfo').textContent = (musicPage + 1) + ' / ' + pages;
+    if ($('musicPrevPage')) $('musicPrevPage').disabled = musicPage <= 0;
+    if ($('musicNextPage')) $('musicNextPage').disabled = musicPage >= pages - 1;
+  }
+  if ($('musicPrevPage')) $('musicPrevPage').addEventListener('click', function () { musicPage--; renderMusic(); });
+  if ($('musicNextPage')) $('musicNextPage').addEventListener('click', function () { musicPage++; renderMusic(); });
+
+  function loadMusic() {
+    if (musicLoading) return;
+    musicLoading = true;
+    musicHint('正在读取云端媒体列表…');
+    fetch('/api/music', { cache: 'no-store', credentials: 'same-origin' })
+      .then(function (r) {
+        applyMediaLimits(r.headers);
+        if (!r.ok) return r.json().catch(function () { return {}; }).then(function (o) { throw new Error(apiError(r, o, 'HTTP ' + r.status)); });
+        return r.json();
+      })
+      .then(function (list) {
+        music = Array.isArray(list) ? list : [];
+        sortMusic();                 // 最新上传排最前
+        renderMusic();
+        var on = music.filter(function (t) { return t.enabled; }).length;
+        var vids = music.filter(isVideoTrack).length;
+        musicHint((music.length
+          ? ('共 ' + music.length + ' 个（视频 ' + vids + ' 个），其中启用 ' + on + ' 个（首页只会播放启用的媒体）')
+          : '暂无媒体文件，点上方「上传音频 / 视频」添加') + usageText());
+      })
+      .catch(function (e) { musicHint('读取失败：' + e.message, true); })
+      .then(function () { musicLoading = false; });
+  }
+
+  function saveMusic() {
+    var payload = {
+      tracks: music.map(function (t) {
+        return { id: t.id, name: t.name, key: t.key, size: t.size, duration: t.duration, type: t.type || '', createdAt: t.createdAt || 0, enabled: !!t.enabled };
+      })
+    };
+    musicHint('正在保存…');
+    return fetch('/api/music', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(payload)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (out) {
+        if (!r.ok) throw new Error(apiError(r, out, '保存失败'));
+        renderMusic();
+        musicHint('已保存 · 首页约 1 秒内生效');
+        return true;
+      });
+    }).catch(function (e) { musicHint('保存失败：' + e.message, true); loadMusic(); return false; });
+  }
+
+  function deleteTrack(i) {
+    var t = music[i]; if (!t) return;
+    var label = isVideoTrack(t) ? '视频' : '音频';
+    if (!confirm('确定删除' + label + '「' + t.name + '」？删除后所有访客都无法再播放该文件。')) return;
+    musicHint('正在删除…');
+    fetch('/api/music?key=' + encodeURIComponent(t.key), { method: 'DELETE', credentials: 'same-origin' })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (out) {
+          if (!r.ok) throw new Error(apiError(r, out, '删除失败'));
+          music.splice(i, 1);
+          STORAGE_USED_BYTES = Math.max(0, STORAGE_USED_BYTES - (Number(t.size) || 0));
+          renderMusic();
+          musicHint('已删除「' + t.name + '」' + usageText());
+          if (isVideoTrack(t)) closeVideoPreview();
+          else if (musicPlayingKey === trackSrc(t)) { musicAudio.pause(); musicPlayingKey = ''; }
+        });
+      })
+      .catch(function (e) { musicHint('删除失败：' + e.message, true); });
+  }
+
+  /* 重命名：只改索引里的显示名，云端文件本身、链接、播放进度都不变 */
+  var renameIdx = -1;
+  function openRename(i) {
+    var t = music[i]; if (!t) return;
+    renameIdx = i;
+    var inp = $('renameInput');
+    inp.value = t.name || '';
+    $('renameModal').classList.add('show');
+    setTimeout(function () { inp.focus(); inp.select(); }, 60);
+  }
+  function closeRename() {
+    var m = $('renameModal'); if (m) m.classList.remove('show');
+    renameIdx = -1;
+  }
+  function applyRename() {
+    var t = renameIdx >= 0 ? music[renameIdx] : null;
+    if (!t) { closeRename(); return; }
+    var name = String($('renameInput').value || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+    if (!name) { toast('名称不能为空'); return; }
+    if (name === t.name) { closeRename(); return; }
+    var old = t.name;
+    t.name = name;
+    closeRename();
+    saveMusic().then(function (ok) {
+      if (ok) toast('已把「' + old + '」改名为「' + name + '」');
+    });
+  }
+  if ($('renameSave')) $('renameSave').addEventListener('click', applyRename);
+  if ($('renameCancel')) $('renameCancel').addEventListener('click', closeRename);
+  if ($('renameCancelX')) $('renameCancelX').addEventListener('click', closeRename);
+  if ($('renameModal')) $('renameModal').addEventListener('click', function (e) { if (e.target === this) closeRename(); });
+  if ($('renameInput')) $('renameInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); applyRename(); }
+    else if (e.key === 'Escape') closeRename();
+  });
+
+  /* 视频预览弹窗（与首页小窗播放同一份云端文件） */
+  var videoPreview = $('videoPreview');
+  function openVideoPreview(t) {
+    if (!videoPreview) return;
+    if (musicPlayingKey && !musicAudio.paused) { musicAudio.pause(); musicPlayingKey = ''; }
+    $('videoModalTitle').textContent = '视频预览 · ' + (t.name || '');
+    videoPreview.src = trackSrc(t);
+    $('videoModal').classList.add('show');
+    var p = videoPreview.play();
+    if (p && p.catch) p.catch(function () {});
+    musicHint('预览中：' + (t.name || '') + '（关闭弹窗即停止）');
+  }
+  function closeVideoPreview() {
+    var m = $('videoModal'); if (m) m.classList.remove('show');
+    if (videoPreview) {
+      try { videoPreview.pause(); } catch (e) {}
+      videoPreview.removeAttribute('src');
+      try { videoPreview.load(); } catch (e) {}
+    }
+  }
+  if ($('videoCloseX')) {
+    $('videoCloseX').addEventListener('click', closeVideoPreview);
+    $('videoModal').addEventListener('click', function (e) { if (e.target === this) closeVideoPreview(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeVideoPreview(); });
+  }
+
+  if ($('musicBody')) {
+    $('musicBody').addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      var i = +b.dataset.i, a = b.dataset.a;
+      if (a === 'toggle') {
+        music[i].enabled = !music[i].enabled; renderMusic(); saveMusic();
+      } else if (a === 'play') {
+        var t = music[i];
+        if (!t) return;
+        if (isVideoTrack(t)) { openVideoPreview(t); return; }
+        var src = trackSrc(t);
+        if (musicPlayingKey === src && !musicAudio.paused) {
+          musicAudio.pause(); musicPlayingKey = ''; musicHint('已暂停试听');
+        } else {
+          musicPlayingKey = src;
+          musicAudio.src = src;
+          musicAudio.play().then(function () {
+            musicHint('试听中：' + t.name + '（再点一次可暂停）');
+          }).catch(function () { musicHint('试听失败，请刷新后再试', true); });
+        }
+      } else if (a === 'rename') {
+        openRename(i);
+      } else if (a === 'del') {
+        deleteTrack(i);
+      }
+    });
+    musicAudio.addEventListener('ended', function () { musicPlayingKey = ''; });
+  }
+
+  /* 音频压缩：解码 → 重采样 44.1kHz → lamejs 编码 MP3 */
+  var ENC_RATE = 44100;
+  var MAX_SECONDS = 600;
+  function decodeAudio(ctx, buf) {
+    return new Promise(function (resolve, reject) {
+      var bad = new Error('无法解码该音频格式，请换 mp3 / wav / m4a');
+      var p;
+      try { p = ctx.decodeAudioData(buf, resolve, function () { reject(bad); }); }
+      catch (err) { reject(bad); return; }
+      if (p && typeof p.then === 'function') p.then(resolve, function () { reject(bad); });
+    });
+  }
+  function compressAudio(file, kbps, onProgress) {
+    return new Promise(function (resolve, reject) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      if (!AC || !OAC) { reject(new Error('当前浏览器不支持音频压缩，请换 Chrome 或 Edge')); return; }
+      if (!window.lamejs || !window.lamejs.Mp3Encoder) { reject(new Error('音频压缩组件未加载，请刷新页面')); return; }
+      var ctx;
+      try { ctx = new AC(); } catch (err) { reject(new Error('无法启动音频解码')); return; }
+      var reader = new FileReader();
+      reader.onerror = function () { reject(new Error('文件读取失败')); };
+      reader.onload = function () {
+        var buf = reader.result;
+        if (ctx.state === 'suspended' && ctx.resume) { try { ctx.resume(); } catch (e) {} }
+        decodeAudio(ctx, buf).then(function (decoded) {
+          try { if (ctx.close) ctx.close(); } catch (e) {}
+          if (!decoded || !decoded.duration) throw new Error('音频内容为空');
+          if (decoded.duration > MAX_SECONDS) {
+            var tooLong = new Error('音频过长（压缩上限 ' + (MAX_SECONDS / 60) + ' 分钟）');
+            tooLong.code = 'TOO_LONG';
+            throw tooLong;
+          }
+
+          var frames = Math.max(1, Math.round(decoded.duration * ENC_RATE));
+          var off = new OAC(2, frames, ENC_RATE);
+          var node = off.createBufferSource();
+          node.buffer = decoded;          // 交给 OfflineAudioContext 自动重采样
+          node.connect(off.destination);
+          node.start(0);
+
+          off.startRendering().then(function (rendered) {
+            try {
+              var left = rendered.getChannelData(0), right = rendered.getChannelData(1);
+              var enc = new window.lamejs.Mp3Encoder(2, ENC_RATE, kbps || 128);
+              var BLOCK = 1152, out = [], total = Math.ceil(left.length / BLOCK) || 1;
+              var i = 0, bi = 0;
+              function pass() {   // 分片编码，之间让出主线程，避免界面卡死
+                var stop = Math.min(left.length, i + BLOCK * 40);
+                for (; i < stop; i += BLOCK, bi++) {
+                  var n = Math.min(BLOCK, left.length - i);
+                  var l16 = new Int16Array(n), r16 = new Int16Array(n);
+                  for (var k = 0; k < n; k++) {
+                    var lv = left[i + k], rv = right[i + k];
+                    lv = lv < -1 ? -1 : (lv > 1 ? 1 : lv);
+                    rv = rv < -1 ? -1 : (rv > 1 ? 1 : rv);
+                    l16[k] = lv < 0 ? lv * 32768 : lv * 32767;
+                    r16[k] = rv < 0 ? rv * 32768 : rv * 32767;
+                  }
+                  var chunk = enc.encodeBuffer(l16, r16);
+                  if (chunk.length) out.push(chunk);
+                }
+                if (onProgress) onProgress(Math.min(99, Math.round((bi / total) * 100)));
+                if (i < left.length) { setTimeout(pass, 0); return; }
+                var tail = enc.flush();
+                if (tail.length) out.push(tail);
+                resolve({ blob: new Blob(out, { type: 'audio/mpeg' }), duration: rendered.duration });
+              }
+              pass();
+            } catch (err) { reject(new Error('压缩失败：' + err.message)); }
+          }, function () { reject(new Error('音频渲染失败')); });
+        }).catch(reject);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  /* 上传：音频先压缩为 MP3；视频原样上传（用 XHR 显示上传进度）
+     上限由服务端下发（Worker 的 MAX_UPLOAD_MB / MAX_STORAGE_MB），前端只做提前拦截 */
+  function guessVideoType(file) {
+    var t = String(file.type || '').toLowerCase();
+    if (/^video\//.test(t)) return t;
+    var n = String(file.name || '').toLowerCase();
+    if (/\.webm$/.test(n)) return 'video/webm';
+    if (/\.mov$/.test(n)) return 'video/quicktime';
+    if (/\.(ogv|ogg)$/.test(n)) return 'video/ogg';
+    return 'video/mp4';
+  }
+  function readMediaDuration(file, isVideo) {
+    return new Promise(function (resolve) {
+      var el = document.createElement(isVideo ? 'video' : 'audio');
+      var url = URL.createObjectURL(file), done = false;
+      function finish(d) {
+        if (done) return;
+        done = true;
+        try { URL.revokeObjectURL(url); } catch (e) {}
+        resolve(isFinite(d) && d > 0 ? Math.round(d) : 0);
+      }
+      el.preload = 'metadata';
+      el.onloadedmetadata = function () { finish(el.duration); };
+      el.onerror = function () { finish(0); };
+      setTimeout(function () { finish(el.duration); }, 8000);
+      el.src = url;
+    });
+  }
+  function guessAudioType(file) {
+    var t = String(file.type || '').toLowerCase();
+    if (/^audio\//.test(t)) return t;
+    var n = String(file.name || '').toLowerCase();
+    if (/\.wav$/.test(n)) return 'audio/wav';
+    if (/\.m4a$/.test(n)) return 'audio/mp4';
+    if (/\.flac$/.test(n)) return 'audio/flac';
+    if (/\.ogg$/.test(n)) return 'audio/ogg';
+    return 'audio/mpeg';
+  }
+  // 原始二进制直传：Pages Function 不做表单解析，直接把请求体流式转给 Worker → R2
+  function uploadRaw(file, niceName, duration, type, label) {
+    // 服务端上限提前拦截：单文件超上限、云端余量不足都不必真的传一遍
+    if (file.size > MAX_CLOUD_BYTES) {
+      return Promise.reject(new Error('文件 ' + fmtSize(file.size) + ' 超过单次上传上限 ' +
+        fmtSize(MAX_CLOUD_BYTES) + '，请先压缩或裁剪'));
+    }
+    if (MAX_STORAGE_BYTES && STORAGE_USED_BYTES + file.size > MAX_STORAGE_BYTES) {
+      return Promise.reject(new Error('云端存储余量不足（已用 ' + fmtSize(STORAGE_USED_BYTES) +
+        ' / 上限 ' + fmtSize(MAX_STORAGE_BYTES) + '），请先删除一些媒体'));
+    }
+    return new Promise(function (resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      var qs = '/api/music?name=' + encodeURIComponent(niceName) +
+        '&duration=' + Math.round(duration || 0) + '&type=' + encodeURIComponent(type);
+      xhr.open('POST', qs, true);
+      xhr.withCredentials = true;
+      xhr.setRequestHeader('Content-Type', type || 'application/octet-stream');
+      xhr.upload.onprogress = function (e) {
+        if (!e.lengthComputable) return;
+        musicHint('上传中' + label + ' ' + Math.round((e.loaded / e.total) * 100) + '% · ' +
+          niceName + '（' + fmtSize(e.loaded) + ' / ' + fmtSize(e.total) + '）');
+      };
+      xhr.onload = function () {
+        var out = {};
+        try { out = JSON.parse(xhr.responseText || '{}'); } catch (e) {}
+        if (xhr.status >= 200 && xhr.status < 300) {
+          applyMediaLimits(xhr);          // 上传成功会带回最新用量，直接更新剩余容量
+          if (!Number(xhr.getResponseHeader('X-Media-Storage-Used-Bytes'))) {
+            STORAGE_USED_BYTES += (Number(out && out.track && out.track.size) || file.size || 0);
+          }
+          resolve(out);
+          return;
+        }
+        reject(new Error(apiError({ status: xhr.status }, out, '上传失败 HTTP ' + xhr.status)));
+      };
+      xhr.onerror = function () { reject(new Error('网络中断，上传失败')); };
+      xhr.onabort = function () { reject(new Error('上传已取消')); };
+      xhr.send(file);
+    });
+  }
+
+  function uploadOne(file, kbps, idx, total) {
+    var label = total > 1 ? '（' + idx + '/' + total + '）' : '';
+    var niceName = file.name.replace(/\.(mp3|wav|m4a|ogg|flac|aac|opus|weba|mp4|m4v|webm|mov|ogv|mkv)$/i, '').slice(0, 80) || '未命名';
+    var isVideo = /^video\//i.test(file.type || '') || /\.(mp4|m4v|webm|mov|ogv|mkv)$/i.test(file.name || '');
+
+    if (isVideo && file.size > MAX_CLOUD_BYTES) {
+      musicHint('「' + file.name + '」' + fmtSize(file.size) + ' 超过单次上传上限 ' +
+        fmtSize(MAX_CLOUD_BYTES) + '，请先压缩或裁剪后再传', true);
+      return Promise.resolve();
+    }
+
+    if (isVideo) {
+      musicHint('正在读取视频信息' + label + '：' + niceName);
+      return readMediaDuration(file, true).then(function (dur) {
+        var type = guessVideoType(file);
+        musicHint('准备上传视频' + label + '：' + niceName + ' · ' + fmtSize(file.size) + '（原样上传，不压缩）');
+        return uploadRaw(file, niceName, dur, type, label).then(function () {
+          musicHint('已上传视频：' + niceName + ' · ' + fmtSize(file.size) + (dur ? ' · ' + fmtDur(dur) : ''));
+        });
+      }).catch(function (e) { musicHint('上传失败（' + file.name + '）：' + e.message, true); });
+    }
+
+    musicHint('正在读取音频' + label + '：' + file.name);
+    return compressAudio(file, kbps, function (pct) {
+      musicHint('压缩中' + label + ' ' + pct + '% · ' + file.name);
+    }).then(function (packed) {
+      musicHint('正在上传' + label + '：' + niceName + ' · ' + fmtSize(packed.blob.size));
+      return uploadRaw(packed.blob, niceName, packed.duration, 'audio/mpeg', label).then(function () {
+        musicHint('已上传音频：' + niceName + ' · 压缩前 ' + fmtSize(file.size) + ' → 压缩后 ' + fmtSize(packed.blob.size));
+      });
+    }).catch(function (e) {
+      if (!e || e.code !== 'TOO_LONG') { musicHint('处理失败（' + file.name + '）：' + e.message, true); return; }
+      // 超过压缩上限的长音频：改为原样上传（mp3 / m4a / wav / ogg / flac 浏览器都能直接播）
+      var type = guessAudioType(file);
+      musicHint('音频超过 10 分钟，改为原样上传' + label + '：' + niceName + ' · ' + fmtSize(file.size));
+      return readMediaDuration(file, false).then(function (dur) {
+        return uploadRaw(file, niceName, dur, type, label).then(function () {
+          musicHint('已上传音频（未压缩）：' + niceName + ' · ' + fmtSize(file.size) + (dur ? ' · ' + fmtDur(dur) : ''));
+        });
+      }).catch(function (e2) { musicHint('上传失败（' + file.name + '）：' + e2.message, true); });
+    });
+  }
+
+  if ($('btnMusicAdd')) {
+    $('btnMusicAdd').addEventListener('click', function () { $('musicInput').click(); });
+    $('btnMusicRefresh').addEventListener('click', function () { loadMusic(); });
+    $('musicInput').addEventListener('change', function (e) {
+      var files = Array.prototype.slice.call(e.target.files || []);
+      e.target.value = '';
+      if (!files.length) return;
+      var kbps = +$('musicBitrate').value || 128;
+      var p = Promise.resolve();
+      files.forEach(function (f, k) { p = p.then(function () { return uploadOne(f, kbps, k + 1, files.length); }); });
+      p.then(function () { musicPage = 0; loadMusic(); });
+    });
+  }
+  loadMusic();
+
+  /* ---------------- 首页「热播榜单」开关（存 R2 settings.json，改完首页即时生效） ---------------- */
+  var chartsEnabled = true;
+  var chartsSaving = false;
+  function renderChartSwitch() {
+    var btn = $('btnChartsToggle'), hint = $('chartSwitchHint');
+    if (!btn) return;
+    btn.disabled = chartsSaving;
+    btn.classList.toggle('on', chartsEnabled);
+    btn.textContent = chartsSaving ? '保存中…' : (chartsEnabled ? '已显示 · 点击关闭' : '已隐藏 · 点击显示');
+    if (hint && !chartsSaving) {
+      hint.textContent = chartsEnabled
+        ? '首页底部展示「原创 / AI、华语、全球」三个热播榜单，点歌名可在线播放。'
+        : '首页已隐藏榜单区块（访客看不到，也不会去抓取上游数据）。';
+    }
+  }
+  function loadChartSwitch() {
+    var btn = $('btnChartsToggle');
+    if (!btn) return;
+    fetch('/api/settings', { cache: 'no-store', credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (s) {
+        chartsEnabled = s ? !!(s.charts || {}).enabled : true;
+        chartsSaving = false;
+        renderChartSwitch();
+      })
+      .catch(function () {
+        chartsSaving = false;
+        if ($('chartSwitchHint')) $('chartSwitchHint').textContent = '读取开关状态失败，可稍后点按钮重试';
+        renderChartSwitch();
+      });
+  }
+  if ($('btnChartsToggle')) {
+    $('btnChartsToggle').addEventListener('click', function () {
+      if (chartsSaving) return;
+      chartsSaving = true;
+      var prev = chartsEnabled;
+      var next = !chartsEnabled;
+      renderChartSwitch();
+      fetch('/api/settings', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ charts: { enabled: next } })
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (o) {
+          if (!r.ok) throw new Error(apiError(r, o, '保存失败'));
+          return o;
+        });
+      }).then(function (o) {
+        chartsEnabled = !!(o && o.charts ? o.charts.enabled : next);
+        chartsSaving = false;
+        renderChartSwitch();
+        toast(chartsEnabled ? '首页榜单已开启' : '首页榜单已关闭');
+      }).catch(function (e) {
+        chartsEnabled = prev;
+        chartsSaving = false;
+        renderChartSwitch();
+        toast('保存失败：' + e.message);
+      });
+    });
+    loadChartSwitch();
+  }
+
+  /* ---------- AI 模型排行榜 ---------- */
+  var aiRankCache = null;
+  var aiBenchRunning = false;
+
+  function fmtMs(ms) {
+    var n = Number(ms) || 0;
+    if (!n) return '—';
+    return n < 1000 ? (Math.round(n) + ' ms') : ((n / 1000).toFixed(1) + ' s');
+  }
+  function aiCapText(caps) {
+    var hasImg = (caps || []).indexOf('img') >= 0;
+    return hasImg ? '图生图 + 文生图' : '纯文生图';
+  }
+  function aiStatusChip(status) {
+    var cls = 'chip';
+    if (status === '待测' || status === '可用') cls = 'chip off';
+    if (status === '异常') cls = 'chip video';
+    return '<span class="' + cls + '">' + escapeHtml(status) + '</span>';
+  }
+
+  function renderAiRank(v) {
+    aiRankCache = v;
+    var rows = (v && v.models) || [];
+    var body = $('aiRankBody');
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="9" class="hint">暂无数据，先点「一键测速」</td></tr>';
+      return;
+    }
+    body.innerHTML = rows.map(function (r) {
+      var pct = r.successRate == null ? '—' : (r.successRate + '%');
+      var note = r.lastError ? '<div class="hint">' + escapeHtml(r.lastError.slice(0, 60)) + '</div>' : '';
+      return '<tr>' +
+        '<td data-label="排名"><strong>' + r.rank + '</strong></td>' +
+        '<td data-label="模型"><strong>' + escapeHtml(r.label) + '</strong><div class="hint">' + escapeHtml(r.id) + '</div></td>' +
+        '<td data-label="平台">' + escapeHtml(r.platform) + '</td>' +
+        '<td data-label="能力">' + aiCapText(r.caps) + '</td>' +
+        '<td data-label="平均耗时">' + fmtMs(r.avgMs) + '</td>' +
+        '<td data-label="成功率">' + pct + '</td>' +
+        '<td data-label="样本">' + (r.total || 0) + note + '</td>' +
+        '<td data-label="得分">' + (r.score == null ? '—' : r.score) + '</td>' +
+        '<td data-label="状态">' + aiStatusChip(r.status) + '</td>' +
+      '</tr>';
+    }).join('');
+
+    var byId = {};
+    rows.forEach(function (r) { byId[r.id] = r; });
+    var img = v.primary && v.primary.img ? byId[v.primary.img] : null;
+    var txt = v.primary && v.primary.txt ? byId[v.primary.txt] : null;
+    var line = '图生图默认：' + (img ? (img.label + '（' + (img.avgMs ? fmtMs(img.avgMs) : '待测') + '）') : '无可用模型');
+    line += ' · 文生图最快：' + (txt ? (txt.label + '（' + (txt.avgMs ? fmtMs(txt.avgMs) : '待测') + '）') : '无可用模型');
+    if (v.updatedAt) line += ' · 更新于 ' + new Date(v.updatedAt).toLocaleString('zh-CN');
+    $('aiRankHint').textContent = line;
+  }
+
+  function loadAiRank() {
+    if (!$('aiRankBody')) return;
+    fetch('/api/ai-rank', { cache: 'no-store', credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (v) {
+        if (!v) throw new Error('读取失败');
+        renderAiRank(v);
+        if (!aiBenchRunning && $('aiBenchHint')) {
+          $('aiBenchHint').textContent = v.models.some(function (m) { return m.total > 0; })
+            ? '最近成绩可在下方查看' : '尚未测速';
+        }
+      })
+      .catch(function () {
+        if ($('aiRankBody')) $('aiRankBody').innerHTML = '<tr><td colspan="9" class="hint">读取榜单失败，点「刷新榜单」重试</td></tr>';
+        if ($('aiBenchHint')) $('aiBenchHint').textContent = '读取失败';
+      });
+  }
+
+  function runAiBench() {
+    if (aiBenchRunning || !aiRankCache) return;
+    var ids = aiRankCache.models.slice();
+    if (!ids.length) return;
+    aiBenchRunning = true;
+    var btn = $('btnAiBench');
+    if (btn) btn.disabled = true;
+    var i = 0, okCount = 0, failCount = 0;
+
+    function next() {
+      if (i >= ids.length) {
+        aiBenchRunning = false;
+        if (btn) btn.disabled = false;
+        $('aiBenchHint').textContent = '测速完成：' + okCount + ' 成功 / ' + failCount + ' 失败';
+        loadAiRank();
+        return;
+      }
+      var m = ids[i];
+      i++;
+      $('aiBenchHint').textContent = '正在测速 ' + i + '/' + ids.length + '：' + m.label + '…';
+      fetch('/api/ai-bench', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: m.id })
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (!r.ok) throw new Error(apiError(r, j, '测速失败'));
+          return j;
+        });
+      }).then(function (j) {
+        if (j.ok) okCount++; else failCount++;
+      }).catch(function () {
+        failCount++;
+      }).then(next);
+    }
+    next();
+  }
+
+  if ($('btnAiBench')) {
+    $('btnAiBench').addEventListener('click', function () {
+      if (aiBenchRunning) return;
+      if (!confirm('将对 8 个模型逐个实测出图，大约需要 1~2 分钟，确定开始？')) return;
+      runAiBench();
+    });
+    $('btnAiRefresh').addEventListener('click', function () {
+      $('aiBenchHint').textContent = '刷新中…';
+      loadAiRank();
+    });
+    $('btnAiReset').addEventListener('click', function () {
+      if (!confirm('清空全部成绩并重新开始轮换？')) return;
+      fetch('/api/ai-rank', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reset' })
+      }).then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (v) {
+          if (v && v.models) renderAiRank(v);
+          $('aiBenchHint').textContent = '成绩已重置';
+          toast('模型成绩已重置');
+        })
+        .catch(function () { toast('重置失败'); });
+    });
+    loadAiRank();
+  }
+})();
+</script>
+</body>
+</html>

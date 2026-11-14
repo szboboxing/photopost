@@ -1,0 +1,9 @@
+# 本地与敏感文件，勿提交
+LOCAL-NOTES.md
+.wrangler/
+_originals/
+.dist/
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
