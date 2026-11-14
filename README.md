@@ -6,6 +6,12 @@ AI 照片 / 海报生成站点：选模板 → 填提示词 → 图生图出图�
 - 技术栈：Cloudflare Pages + Pages Functions + Cloudflare Worker（R2 读写）+ R2
 - 部署：`.\deploy.ps1`（需要本机已安装并登录 `wrangler`）
 
+## 截图
+
+![首页：上传照片与选择风格](docs/screenshots/home.png)
+
+![生成海报 · 使用说明 · 热播榜单](docs/screenshots/charts.png)
+
 ## 目录
 
 ```
